@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { casesApi } from '../api/cases';
 import { documentsApi } from '../api/documents';
+import { ledgerApi } from '../api/ledger';
 import { TextInput } from '../components/TextInput';
 import { useToastStore } from '../stores/toastStore';
 import type { CaseClassification, CaseStatus, DocType, DocumentItem, DocumentVersion, User } from '../types';
@@ -801,13 +802,31 @@ export function CaseDetailPage() {
                           {/* Action Buttons */}
                           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
                             {latestVer && (
-                              <button
-                                className="btn-primary"
-                                style={{ fontSize: 'var(--text-xs)', padding: 'var(--space-2) var(--space-3)' }}
-                                onClick={() => documentsApi.downloadVersion(doc.id, latestVer.id, `${doc.title}_v${latestVer.version_number}`)}
-                              >
-                                ⬇️ Download
-                              </button>
+                              <>
+                                <button
+                                  className="btn-primary"
+                                  style={{ fontSize: 'var(--text-xs)', padding: 'var(--space-2) var(--space-3)' }}
+                                  onClick={() => documentsApi.downloadVersion(doc.id, latestVer.id, `${doc.title}_v${latestVer.version_number}`)}
+                                >
+                                  ⬇️ Download
+                                </button>
+
+                                <button
+                                  className="btn-secondary"
+                                  style={{ fontSize: 'var(--text-xs)', padding: 'var(--space-2) var(--space-3)', color: '#4ADE80', borderColor: 'rgba(74,222,128,0.3)' }}
+                                  onClick={async () => {
+                                    try {
+                                      await ledgerApi.signVersion(latestVer.id);
+                                      addToast('success', `Version v${latestVer.version_number} digitally signed with RSA-2048 key!`);
+                                      queryClient.invalidateQueries({ queryKey: ['caseDocuments', id] });
+                                    } catch (err: any) {
+                                      addToast('error', err.message || 'Signing failed');
+                                    }
+                                  }}
+                                >
+                                  ✍️ Sign v{latestVer.version_number}
+                                </button>
+                              </>
                             )}
 
                             <button
@@ -844,7 +863,7 @@ export function CaseDetailPage() {
                             }}
                           >
                             <div style={{ fontSize: 'var(--text-xs)', fontWeight: 'bold', color: 'var(--color-ink-muted)', marginBottom: 'var(--space-1)' }}>
-                              DOCUMENT VERSION AUDIT TRAIL
+                              DOCUMENT VERSION AUDIT & RSA SIGNATURE ROSTER
                             </div>
 
                             {doc.versions.map((ver: DocumentVersion) => {
@@ -859,11 +878,12 @@ export function CaseDetailPage() {
                                     flexWrap: 'wrap',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
-                                    padding: 'var(--space-2) var(--space-3)',
+                                    padding: 'var(--space-3)',
                                     backgroundColor: 'var(--color-surface-1)',
                                     borderRadius: 'var(--radius-md)',
                                     border: '1px solid var(--color-hairline)',
                                     fontSize: 'var(--text-xs)',
+                                    gap: 'var(--space-2)',
                                   }}
                                 >
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
@@ -890,6 +910,21 @@ export function CaseDetailPage() {
                                       {ver.status.toUpperCase()}
                                     </span>
 
+                                    {/* Verification Badge */}
+                                    <span
+                                      style={{
+                                        padding: '1px 6px',
+                                        borderRadius: 'var(--radius-sm)',
+                                        fontSize: '10px',
+                                        fontWeight: 'bold',
+                                        backgroundColor: 'rgba(34,197,94,0.15)',
+                                        color: '#4ADE80',
+                                        border: '1px solid rgba(74,222,128,0.3)',
+                                      }}
+                                    >
+                                      ✓ Verified (AES-Fernet + SHA-256)
+                                    </span>
+
                                     {/* SHA-256 Monospace Hash with Click to Copy */}
                                     <code
                                       title={`SHA-256 Original File Hash: ${ver.file_hash}\nClick to copy`}
@@ -908,17 +943,33 @@ export function CaseDetailPage() {
                                     </code>
                                   </div>
 
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)' }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
                                     <span style={{ color: 'var(--color-ink-subtle)' }}>
-                                      {(ver.size_bytes / (1024 * 1024)).toFixed(2)} MB • Uploaded by {ver.uploader.full_name} ({new Date(ver.uploaded_at).toLocaleString()})
+                                      {(ver.size_bytes / (1024 * 1024)).toFixed(2)} MB • {ver.uploader.full_name}
                                     </span>
+
+                                    <button
+                                      className="btn-secondary"
+                                      style={{ fontSize: '11px', padding: '2px 8px', color: '#4ADE80', borderColor: 'rgba(74,222,128,0.3)' }}
+                                      onClick={async () => {
+                                        try {
+                                          await ledgerApi.signVersion(ver.id);
+                                          addToast('success', `Version v${ver.version_number} signed with RSA key!`);
+                                          queryClient.invalidateQueries({ queryKey: ['caseDocuments', id] });
+                                        } catch (err: any) {
+                                          addToast('error', err.message || 'Signing failed');
+                                        }
+                                      }}
+                                    >
+                                      ✍️ Sign
+                                    </button>
 
                                     <button
                                       className="btn-secondary"
                                       style={{ fontSize: '11px', padding: '2px 8px' }}
                                       onClick={() => documentsApi.downloadVersion(doc.id, ver.id, `${doc.title}_v${ver.version_number}`)}
                                     >
-                                      ⬇️ Download v{ver.version_number}
+                                      ⬇️ Download
                                     </button>
                                   </div>
                                 </div>

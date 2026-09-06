@@ -27,6 +27,8 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True)
     failed_attempts: Mapped[int] = mapped_column(default=0, server_default=sa.text('0'))
     locked_until: Mapped[Optional[datetime]] = mapped_column(nullable=True)
+    rsa_private_key_enc: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)
+    rsa_public_key: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     cases_created = relationship("Case", back_populates="creator")

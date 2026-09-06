@@ -182,6 +182,16 @@ async def upload_document(
         ip_address=request.client.host if request.client else None,
     )
 
+    # Record Ledger Transaction (Hash Chain)
+    from app.ledger_service import record_ledger_event
+    record_ledger_event(
+        db=db,
+        document_version_id=first_version.id,
+        data_hash=file_hash,
+        event_type="document_uploaded",
+        actor_id=current_user.id,
+    )
+
     db.expire_all()
 
     # Fetch document with full relationships
@@ -275,6 +285,16 @@ async def upload_document_version(
         resource_type="document",
         resource_id=doc.id,
         ip_address=request.client.host if request.client else None,
+    )
+
+    # Record Ledger Transaction (Hash Chain)
+    from app.ledger_service import record_ledger_event
+    record_ledger_event(
+        db=db,
+        document_version_id=new_version.id,
+        data_hash=file_hash,
+        event_type="version_uploaded",
+        actor_id=current_user.id,
     )
 
     db.expire_all()
