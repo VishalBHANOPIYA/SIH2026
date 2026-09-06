@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { auditApi } from '../api/audit';
 import type { AuditFilterParams } from '../api/audit';
 import { casesApi } from '../api/cases';
+import { SkeletonRow, EmptyState } from '../components/Skeleton';
 import type { AuditEventItem } from '../types';
 
 const ACTION_ICONS: Record<string, string> = {
@@ -216,16 +217,20 @@ export function AuditLogPage() {
         }}
       >
         {isLoading ? (
-          <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-ink-subtle)' }}>
-            Loading audit events...
+          <div style={{ padding: 'var(--space-4)' }}>
+            <SkeletonRow count={6} />
           </div>
         ) : isError ? (
           <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-error)' }}>
             Failed to load audit logs. Please try again.
           </div>
         ) : !data || data.items.length === 0 ? (
-          <div style={{ padding: 'var(--space-8)', textAlign: 'center', color: 'var(--color-ink-subtle)' }}>
-            No audit log entries matching your criteria.
+          <div style={{ padding: 'var(--space-4)' }}>
+            <EmptyState
+              icon="🛡️"
+              title="No Audit Logs Found"
+              description="No security audit events match your selected filters. Try clearing your search parameters."
+            />
           </div>
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm)' }}>

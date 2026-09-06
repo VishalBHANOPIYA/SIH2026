@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { ledgerApi, type LedgerTransactionItem, type VerifyChainResult } from '../api/ledger';
 import { useToastStore } from '../stores/toastStore';
+import { SkeletonRow, EmptyState } from '../components/Skeleton';
 
 const eventTypeStyles: Record<string, { label: string; bg: string; color: string; icon: string }> = {
   document_uploaded: { label: 'DOCUMENT UPLOADED', bg: 'rgba(59,130,246,0.15)', color: '#60A5FA', icon: '📤' },
@@ -147,9 +148,7 @@ export function LedgerPage() {
 
       {/* Blockchain Timeline View */}
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--color-ink-subtle)' }}>
-          Loading cryptographic ledger blocks...
-        </div>
+        <SkeletonRow count={5} />
       ) : error ? (
         <div
           style={{
@@ -163,16 +162,11 @@ export function LedgerPage() {
           Failed to load ledger chain.
         </div>
       ) : chain.length === 0 ? (
-        <div
-          className="feature-card"
-          style={{ textAlign: 'center', padding: 'var(--space-12)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)' }}
-        >
-          <div style={{ fontSize: '3rem' }}>🔗</div>
-          <h3 className="card-title">Genesis State (Empty Ledger)</h3>
-          <p className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>
-            Upload or sign a document in the Case Workspace to write the genesis block.
-          </p>
-        </div>
+        <EmptyState
+          icon="🔗"
+          title="No Ledger Transactions Yet"
+          description="Upload evidence documents or sign files to generate your first immutable block in the SHA-256 permissioned hash chain."
+        />
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', position: 'relative' }}>
           {chain.map((tx: LedgerTransactionItem, index: number) => {

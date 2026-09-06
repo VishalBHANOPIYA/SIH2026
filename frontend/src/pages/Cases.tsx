@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { casesApi } from '../api/cases';
 import { TextInput } from '../components/TextInput';
+import { SkeletonCard, EmptyState } from '../components/Skeleton';
 import { useToastStore } from '../stores/toastStore';
 import type { Case, CaseClassification, CaseStatus } from '../types';
 
@@ -173,8 +174,10 @@ export function CasesPage() {
 
       {/* Cases Grid */}
       {isLoading ? (
-        <div style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--color-ink-subtle)' }}>
-          Loading case repository...
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 'var(--space-6)' }}>
+          <SkeletonCard height="220px" />
+          <SkeletonCard height="220px" />
+          <SkeletonCard height="220px" />
         </div>
       ) : error ? (
         <div
@@ -189,23 +192,17 @@ export function CasesPage() {
           Failed to load cases. Please try again.
         </div>
       ) : cases.length === 0 ? (
-        <div
-          className="feature-card"
-          style={{ textAlign: 'center', padding: 'var(--space-12)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 'var(--space-3)' }}
-        >
-          <div style={{ fontSize: '3rem' }}>📂</div>
-          <h3 className="card-title">No cases found</h3>
-          <p className="text-muted" style={{ fontSize: 'var(--text-sm)' }}>
-            {search || statusFilter || classificationFilter || assignedToMe
-              ? 'No cases match your active filters. Try clearing filters.'
-              : 'Create your first digital investigation case to get started.'}
-          </p>
-          {!search && !statusFilter && (
-            <button className="btn-primary" onClick={() => setIsModalOpen(true)} style={{ marginTop: 'var(--space-2)' }}>
-              ＋ Create First Case
-            </button>
-          )}
-        </div>
+        <EmptyState
+          icon="📂"
+          title="No cases yet"
+          description={
+            search || statusFilter || classificationFilter || assignedToMe
+              ? 'No cases match your active search filters. Try clearing your filters.'
+              : 'No digital investigation cases exist in the repository yet. Create your first case to begin.'
+          }
+          actionLabel="＋ Create First Case"
+          onAction={() => setIsModalOpen(true)}
+        />
       ) : (
         <div
           style={{
