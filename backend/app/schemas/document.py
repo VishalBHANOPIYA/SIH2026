@@ -16,6 +16,9 @@ class DocumentVersionOut(BaseModel):
     uploader: UserOut
     uploaded_at: datetime
     status: str
+    extracted_text: Optional[str] = None
+    ai_suggested_type: Optional[str] = None
+    ai_confidence: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

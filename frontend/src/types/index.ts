@@ -90,6 +90,9 @@ export interface DocumentVersion {
   uploader: User;
   uploaded_at: string;
   status: 'draft' | 'approved' | 'superseded';
+  extracted_text?: string | null;
+  ai_suggested_type?: string | null;
+  ai_confidence?: string | null;
 }
 
 export interface DocumentItem {
@@ -105,4 +108,30 @@ export interface DocumentItem {
   latest_version: DocumentVersion | null;
 }
 
+// --- Search Types ---
 
+export interface SearchHit {
+  document_id: number;
+  document_title: string;
+  doc_type: string;
+  version_id: number;
+  version_number: number;
+  snippet: string;
+  case_id: number;
+  case_number: string;
+  case_title: string;
+  rank: number;
+}
+
+export interface SearchResultGroup {
+  case_id: number;
+  case_number: string;
+  case_title: string;
+  hits: SearchHit[];
+}
+
+export interface SearchResponse {
+  query: string;
+  total_hits: number;
+  groups: SearchResultGroup[];
+}

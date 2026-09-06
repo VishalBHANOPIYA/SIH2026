@@ -1,6 +1,7 @@
 from __future__ import annotations
 import os
 import hashlib
+import logging
 import mimetypes
 from typing import Optional, List
 from pathlib import Path
@@ -25,6 +26,9 @@ from app.schemas import UserOut
 from app.schemas.document import DocumentOut, DocumentVersionOut
 from app.dependencies import get_current_user
 from app.encryption import encrypt_bytes, decrypt_bytes
+from app.ai_service import extract_text, classify_document
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -53,21 +57,37 @@ def log_document_audit(
     db.add(audit)
     db.commit()
 
-def format_document_out(doc: Document) -> DocumentOut:
+def _make_version_out(v: DocumentVersion, ai_type: str | None = None, ai_conf: str | None = None) -> DocumentVersionOut:
+    return DocumentVersionOut(
+        id=v.id,
+        document_id=v.document_id,
+        version_number=v.version_number,
+        storage_path=v.storage_path,
+        file_hash=v.file_hash,
+        mime_type=v.mime_type,
+        size_bytes=v.size_bytes,
+        uploaded_by=v.uploaded_by,
+        uploader=UserOut.model_validate(v.uploader),
+        uploaded_at=v.uploaded_at,
+        status=v.status.value if isinstance(v.status, VersionStatus) else str(v.status),
+        extracted_text=v.extracted_text,
+        ai_suggested_type=ai_type,
+        ai_confidence=ai_conf,
+    )
+
+
+def format_document_out(
+    doc: Document,
+    ai_type: str | None = None,
+    ai_conf: str | None = None,
+    ai_version_id: int | None = None,
+) -> DocumentOut:
     sorted_versions = sorted(doc.versions, key=lambda v: v.version_number, reverse=True)
     versions_out = [
-        DocumentVersionOut(
-            id=v.id,
-            document_id=v.document_id,
-            version_number=v.version_number,
-            storage_path=v.storage_path,
-            file_hash=v.file_hash,
-            mime_type=v.mime_type,
-            size_bytes=v.size_bytes,
-            uploaded_by=v.uploaded_by,
-            uploader=UserOut.model_validate(v.uploader),
-            uploaded_at=v.uploaded_at,
-            status=v.status.value if isinstance(v.status, VersionStatus) else str(v.status),
+        _make_version_out(
+            v,
+            ai_type=ai_type if v.id == ai_version_id else None,
+            ai_conf=ai_conf if v.id == ai_version_id else None,
         )
         for v in sorted_versions
     ]
@@ -158,6 +178,19 @@ async def upload_document(
 
     mime_type = file.content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
 
+    # --- AI Processing: OCR + Classification ---
+    extracted = ""
+    ai_suggested_type = None
+    ai_confidence = None
+    try:
+        extracted = extract_text(raw_bytes, filename, mime_type)
+        if extracted:
+            ai_suggested_type, ai_confidence = classify_document(extracted, filename)
+        elif filename:
+            ai_suggested_type, ai_confidence = classify_document("", filename)
+    except Exception as exc:
+        logger.warning(f"AI processing failed for {filename}: {exc}")
+
     # Create DocumentVersion row
     first_version = DocumentVersion(
         document_id=new_doc.id,
@@ -168,6 +201,7 @@ async def upload_document(
         size_bytes=len(raw_bytes),
         uploaded_by=current_user.id,
         status=VersionStatus.approved,
+        extracted_text=extracted if extracted else None,
     )
     db.add(first_version)
     db.commit()
@@ -204,7 +238,12 @@ async def upload_document(
         .filter(Document.id == new_doc.id)
         .first()
     )
-    return format_document_out(doc_full)
+    return format_document_out(
+        doc_full,
+        ai_type=ai_suggested_type,
+        ai_conf=ai_confidence,
+        ai_version_id=first_version.id,
+    )
 
 
 @router.post("/documents/{document_id}/versions", response_model=DocumentOut)
@@ -265,6 +304,19 @@ async def upload_document_version(
 
     mime_type = file.content_type or mimetypes.guess_type(filename)[0] or "application/octet-stream"
 
+    # --- AI Processing: OCR + Classification ---
+    extracted = ""
+    ai_suggested_type = None
+    ai_confidence = None
+    try:
+        extracted = extract_text(raw_bytes, filename, mime_type)
+        if extracted:
+            ai_suggested_type, ai_confidence = classify_document(extracted, filename)
+        elif filename:
+            ai_suggested_type, ai_confidence = classify_document("", filename)
+    except Exception as exc:
+        logger.warning(f"AI processing failed for version upload {filename}: {exc}")
+
     new_version = DocumentVersion(
         document_id=doc.id,
         version_number=new_v_num,
@@ -274,6 +326,7 @@ async def upload_document_version(
         size_bytes=len(raw_bytes),
         uploaded_by=current_user.id,
         status=VersionStatus.approved,
+        extracted_text=extracted if extracted else None,
     )
     db.add(new_version)
     db.commit()
@@ -308,7 +361,12 @@ async def upload_document_version(
         .filter(Document.id == doc.id)
         .first()
     )
-    return format_document_out(doc_full)
+    return format_document_out(
+        doc_full,
+        ai_type=ai_suggested_type,
+        ai_conf=ai_confidence,
+        ai_version_id=new_version.id,
+    )
 
 
 @router.get("/cases/{case_id}/documents", response_model=List[DocumentOut])

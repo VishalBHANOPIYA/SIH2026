@@ -51,6 +51,9 @@ class DocumentVersion(Base):
     uploaded_at: Mapped[datetime] = mapped_column(server_default=func.now())
     status: Mapped[VersionStatus] = mapped_column(sa.Enum(VersionStatus, name='version_status_enum', create_constraint=True))
 
+    # AI Processing — extracted text from OCR / DOCX parsing
+    extracted_text: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True, default=None)
+
     document = relationship("Document", back_populates="versions")
     uploader = relationship("User", back_populates="documents_uploaded")
     signatures = relationship("Signature", back_populates="document_version")
