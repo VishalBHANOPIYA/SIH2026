@@ -135,3 +135,50 @@ export interface SearchResponse {
   total_hits: number;
   groups: SearchResultGroup[];
 }
+
+// --- Audit & Share Governance Types ---
+
+export interface AuditEventItem {
+  id: number;
+  actor_id: number;
+  actor: User | null;
+  action: string;
+  resource_type: string;
+  resource_id: number;
+  outcome: 'success' | 'denied';
+  ip_address: string | null;
+  timestamp: string;
+}
+
+export interface AuditPaginatedResponse {
+  items: AuditEventItem[];
+  total: number;
+  page: number;
+  limit: number;
+  pages: number;
+}
+
+export type SharePermission = 'view_only' | 'download';
+export type ShareStatus = 'pending' | 'accepted' | 'rejected' | 'expired';
+
+export interface ShareItem {
+  id: number;
+  case_id: number | null;
+  document_id: number | null;
+  document_title: string | null;
+  sender_id: number;
+  sender: User;
+  recipient_id: number | null;
+  recipient: User | null;
+  recipient_department: string | null;
+  permission_level: SharePermission;
+  expires_at: string | null;
+  status: ShareStatus;
+  created_at: string;
+}
+
+export interface SharedDocumentItem {
+  share: ShareItem;
+  document: DocumentItem;
+}
+

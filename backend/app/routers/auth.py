@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import User
+from app.models import User, AuditEvent, AuditOutcome
 from app.schemas import (
     LoginRequest, LoginResponse,
     MFAVerifyRequest, TokenResponse,
@@ -35,9 +35,29 @@ MAX_FAILED_ATTEMPTS = 5
 LOCKOUT_MINUTES = 30
 
 
+def log_auth_audit(
+    db: Session,
+    actor_id: int,
+    action: str,
+    outcome: AuditOutcome,
+    ip_address: Optional[str] = None,
+):
+    audit = AuditEvent(
+        actor_id=actor_id,
+        action=action,
+        resource_type="auth",
+        resource_id=actor_id,
+        outcome=outcome,
+        ip_address=ip_address,
+    )
+    db.add(audit)
+    db.commit()
+
+
 @router.post("/login", response_model=LoginResponse)
 def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     """Authenticate with email + password. Returns an MFA challenge token."""
+    client_ip = request.client.host if request.client else None
     user = db.query(User).filter(User.email == body.email).first()
     if not user:
         raise HTTPException(
@@ -46,6 +66,7 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
         )
 
     if not user.is_active:
+        log_auth_audit(db, user.id, "login-failed", AuditOutcome.denied, client_ip)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account is disabled. Contact your administrator.",
@@ -55,6 +76,7 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     now = datetime.now(timezone.utc)
     if user.locked_until and user.locked_until.replace(tzinfo=timezone.utc) > now:
         remaining = int((user.locked_until.replace(tzinfo=timezone.utc) - now).total_seconds() // 60) + 1
+        log_auth_audit(db, user.id, "login-failed", AuditOutcome.denied, client_ip)
         raise HTTPException(
             status_code=status.HTTP_423_LOCKED,
             detail=f"Account locked due to too many failed attempts. Try again in {remaining} minute(s).",
@@ -67,11 +89,13 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
             user.locked_until = now + timedelta(minutes=LOCKOUT_MINUTES)
             user.failed_attempts = 0
             db.commit()
+            log_auth_audit(db, user.id, "login-failed", AuditOutcome.denied, client_ip)
             raise HTTPException(
                 status_code=status.HTTP_423_LOCKED,
                 detail=f"Account locked after {MAX_FAILED_ATTEMPTS} failed attempts. Try again in {LOCKOUT_MINUTES} minutes.",
             )
         db.commit()
+        log_auth_audit(db, user.id, "login-failed", AuditOutcome.denied, client_ip)
         remaining = MAX_FAILED_ATTEMPTS - user.failed_attempts
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -82,6 +106,7 @@ def login(body: LoginRequest, request: Request, db: Session = Depends(get_db)):
     user.failed_attempts = 0
     user.locked_until = None
     db.commit()
+    log_auth_audit(db, user.id, "login", AuditOutcome.success, client_ip)
 
     # ── Issue MFA challenge token ──
     mfa_setup_required = user.mfa_secret is None
@@ -131,14 +156,16 @@ def mfa_setup(body: MFASetupRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/mfa/verify", response_model=TokenResponse)
-def mfa_verify(body: MFAVerifyRequest, db: Session = Depends(get_db)):
+def mfa_verify(body: MFAVerifyRequest, request: Request, db: Session = Depends(get_db)):
     """Verify a TOTP code and issue JWT access + refresh tokens."""
+    client_ip = request.client.host if request.client else None
     payload = _validate_challenge_token(body.challenge_token)
     user = db.query(User).filter(User.id == int(payload["sub"])).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     if not user.mfa_secret:
+        log_auth_audit(db, user.id, "mfa-verify", AuditOutcome.denied, client_ip)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="MFA not set up. Call /auth/mfa/setup first.",
@@ -146,6 +173,7 @@ def mfa_verify(body: MFAVerifyRequest, db: Session = Depends(get_db)):
 
     totp = pyotp.TOTP(user.mfa_secret)
     if not (totp.verify(body.code, valid_window=1) or body.code in ("123456", "000000")):
+        log_auth_audit(db, user.id, "mfa-verify", AuditOutcome.denied, client_ip)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid MFA code. Please try again or use demo code '123456'.",
@@ -160,6 +188,8 @@ def mfa_verify(body: MFAVerifyRequest, db: Session = Depends(get_db)):
         data={"sub": str(user.id), "type": TOKEN_TYPE_REFRESH},
         expires_delta=timedelta(days=7),
     )
+
+    log_auth_audit(db, user.id, "mfa-verify", AuditOutcome.success, client_ip)
 
     user_out = UserOut(
         id=user.id,

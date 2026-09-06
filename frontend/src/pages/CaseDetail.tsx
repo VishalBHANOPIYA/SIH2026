@@ -4,7 +4,9 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { casesApi } from '../api/cases';
 import { documentsApi } from '../api/documents';
 import { ledgerApi } from '../api/ledger';
+import { auditApi } from '../api/audit';
 import { TextInput } from '../components/TextInput';
+import { ShareModal } from '../components/ShareModal';
 import { useToastStore } from '../stores/toastStore';
 import type { CaseClassification, CaseStatus, DocType, DocumentItem, DocumentVersion, User } from '../types';
 
@@ -62,6 +64,9 @@ export function CaseDetailPage() {
   // Expanded version histories (docId -> boolean)
   const [expandedDocs, setExpandedDocs] = useState<Record<number, boolean>>({});
 
+  // Share Modal state
+  const [shareModalDoc, setShareModalDoc] = useState<DocumentItem | null>(null);
+
   // Fetch Case details
   const { data: c, isLoading, error } = useQuery({
     queryKey: ['case', id],
@@ -74,6 +79,13 @@ export function CaseDetailPage() {
     queryKey: ['caseDocuments', id],
     queryFn: () => documentsApi.getCaseDocuments(id!),
     enabled: !!id,
+  });
+
+  // Fetch Case Audit Logs
+  const { data: caseAuditData, isLoading: caseAuditLoading } = useQuery({
+    queryKey: ['caseAudit', id],
+    queryFn: () => auditApi.getLogs({ case_id: Number(id) }),
+    enabled: !!id && activeTab === 'audit',
   });
 
   // Fetch assignable users for modal
@@ -964,13 +976,9 @@ export function CaseDetailPage() {
                                       ✍️ Sign
                                     </button>
 
-                                    <button
-                                      className="btn-secondary"
-                                      style={{ fontSize: '11px', padding: '2px 8px' }}
-                                      onClick={() => documentsApi.downloadVersion(doc.id, ver.id, `${doc.title}_v${ver.version_number}`)}
-                                    >
-                                      ⬇️ Download
-                                    </button>
+                                    <span style={{ color: 'var(--color-ink-subtle)', marginLeft: '8px' }}>
+                                      Uploaded by {ver.uploader.full_name} on {new Date(ver.uploaded_at).toLocaleString()}
+                                    </span>
                                   </div>
                                 </div>
                               );
@@ -1062,14 +1070,66 @@ export function CaseDetailPage() {
           <div className="feature-card" style={{ padding: 'var(--space-6)' }}>
             <h3 className="card-title" style={{ marginBottom: 'var(--space-2)' }}>Case Audit Log</h3>
             <p className="text-muted" style={{ fontSize: 'var(--text-sm)', marginBottom: 'var(--space-6)' }}>
-              Immutable audit events recorded for Case #{c.case_number}.
+              Immutable security audit events recorded for Case #{c.case_number}.
             </p>
-            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-muted)', fontStyle: 'italic' }}>
-              Full audit trail integration active in system audit module.
-            </div>
+            {caseAuditLoading ? (
+              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-subtle)' }}>Loading case audit events...</div>
+            ) : !caseAuditData || caseAuditData.items.length === 0 ? (
+              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-ink-subtle)', fontStyle: 'italic' }}>
+                No audit events logged for this case yet.
+              </div>
+            ) : (
+              <div style={{ borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--color-hairline)' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-xs)' }}>
+                  <thead>
+                    <tr style={{ backgroundColor: 'var(--color-surface-2)', color: 'var(--color-ink-muted)' }}>
+                      <th style={{ padding: 'var(--space-2) var(--space-3)' }}>Timestamp</th>
+                      <th style={{ padding: 'var(--space-2) var(--space-3)' }}>Actor</th>
+                      <th style={{ padding: 'var(--space-2) var(--space-3)' }}>Action</th>
+                      <th style={{ padding: 'var(--space-2) var(--space-3)' }}>Outcome</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {caseAuditData.items.map((ev) => (
+                      <tr key={ev.id} style={{ borderTop: '1px solid var(--color-hairline)' }}>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontFamily: 'monospace', color: 'var(--color-ink-muted)' }}>
+                          {new Date(ev.timestamp).toLocaleString()}
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)', color: 'var(--color-ink)' }}>
+                          {ev.actor ? ev.actor.full_name : `User #${ev.actor_id}`}
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)', fontWeight: 'bold', color: 'var(--color-ink)' }}>
+                          {ev.action}
+                        </td>
+                        <td style={{ padding: 'var(--space-2) var(--space-3)' }}>
+                          <span
+                            style={{
+                              color: ev.outcome === 'success' ? 'var(--color-success)' : 'var(--color-error)',
+                              fontWeight: 'bold',
+                            }}
+                          >
+                            {ev.outcome.toUpperCase()}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         )}
       </div>
+
+      {/* Share Modal */}
+      {shareModalDoc && (
+        <ShareModal
+          caseId={Number(id)}
+          document={shareModalDoc}
+          isOpen={!!shareModalDoc}
+          onClose={() => setShareModalDoc(null)}
+        />
+      )}
 
       {/* Assign Officer Modal */}
       {isAssignModalOpen && (
