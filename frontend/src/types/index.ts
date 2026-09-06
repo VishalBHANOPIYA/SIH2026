@@ -33,3 +33,38 @@ export type NavItem = {
   icon: string;
   roles?: string[];  // if set, only these roles see it
 };
+
+export type CaseStatus = 'open' | 'under_investigation' | 'closed' | 'archived';
+export type CaseClassification = 'confidential' | 'restricted' | 'internal';
+
+export interface CaseAssignment {
+  id: number;
+  case_id: number;
+  user_id: number;
+  user: User;
+  assigned_role: string;
+  assigned_at: string;
+}
+
+export interface Case {
+  id: number;
+  case_number: string;
+  title: string;
+  case_type: string;
+  status: CaseStatus;
+  classification: CaseClassification;
+  created_by: number;
+  creator: User;
+  created_at: string;
+  assignments: CaseAssignment[];
+  document_count: number;
+}
+
+export interface CreateCaseInput {
+  case_number?: string;
+  title: string;
+  case_type: string;
+  classification: CaseClassification;
+  status?: CaseStatus;
+}
+
