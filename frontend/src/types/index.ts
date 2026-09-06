@@ -68,3 +68,41 @@ export interface CreateCaseInput {
   status?: CaseStatus;
 }
 
+export type DocType =
+  | 'FIR'
+  | 'witness_statement'
+  | 'charge_sheet'
+  | 'forensic_report'
+  | 'evidence_media'
+  | 'court_filing'
+  | 'legal_notice'
+  | 'judgment';
+
+export interface DocumentVersion {
+  id: number;
+  document_id: number;
+  version_number: number;
+  storage_path: string;
+  file_hash: string;
+  mime_type: string;
+  size_bytes: number;
+  uploaded_by: number;
+  uploader: User;
+  uploaded_at: string;
+  status: 'draft' | 'approved' | 'superseded';
+}
+
+export interface DocumentItem {
+  id: number;
+  case_id: number;
+  doc_type: DocType;
+  title: string;
+  sensitivity: string | null;
+  created_by: number;
+  creator: User;
+  created_at: string;
+  versions: DocumentVersion[];
+  latest_version: DocumentVersion | null;
+}
+
+

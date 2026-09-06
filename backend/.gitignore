@@ -30,6 +30,10 @@ Thumbs.db
 node_modules/
 dist/
 
+# Storage & Encrypted files
+storage/
+*.enc
+
 # Logs
 *.log
 tunnel.log
