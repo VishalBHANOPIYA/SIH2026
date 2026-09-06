@@ -1,0 +1,11 @@
+{
+  "name": "accessibility-companion-agent",
+  "version": "1.0.0",
+  "description": "Accessibility Companion Agent",
+  "scripts": {
+    "dev": "python3 server.py",
+    "tunnel": "./cloudflared tunnel --url http://localhost:5000"
+  },
+  "author": "",
+  "license": "ISC"
+}

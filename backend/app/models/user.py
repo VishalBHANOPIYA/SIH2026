@@ -25,6 +25,8 @@ class User(Base):
     role: Mapped[UserRole] = mapped_column(sa.Enum(UserRole, name='user_role_enum', create_constraint=True))
     mfa_secret: Mapped[Optional[str]] = mapped_column(sa.String(64), nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True)
+    failed_attempts: Mapped[int] = mapped_column(default=0, server_default=sa.text('0'))
+    locked_until: Mapped[Optional[datetime]] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     cases_created = relationship("Case", back_populates="creator")
