@@ -27,6 +27,7 @@ Law enforcement agencies and judicial bodies suffer from fragmented evidence man
 - **Integrity & Chain of Custody**: Automatic SHA-256 cryptographic hashing upon upload, asymmetric RSA-2048 digital signatures linked to official credentials, and a linked hash-chain permissioned ledger for immutable tamper detection.
 - **Audit & Compliance**: System-wide immutable audit trail logging actor, action, resource, outcome (success/denied), IP address, and microsecond timestamp. Includes filterable data grid views and one-click CSV export (`GET /audit/export`).
 - **Secure Collaboration**: Time-bound document sharing (`ShareRequest`) with granular access permissions (`view_only`, `download`), automatic expiry enforcement, active share countdown timers, and "Shared with Me" dashboard feeds.
+- **Public Verification Portal & QR Verification**: Public, unauthenticated `/verify` route displaying a standalone product-mockup card result state. Allows external verification of document authenticity and ledger position using a short verification code (`VER-XXXXXXXXXXXX`) or SHA-256 hash. Returns a redacted chain of custody timeline (zero PII, zero file content). Generates downloadable QR code images for officers.
 
 ---
 

@@ -8,6 +8,7 @@ import { Layout } from './components/Layout';
 import { LoginPage } from './pages/Login';
 import { MFASetupPage } from './pages/MFASetup';
 import { MFAVerifyPage } from './pages/MFAVerify';
+import { VerifyPage } from './pages/Verify';
 import { DashboardPage } from './pages/Dashboard';
 import { CasesPage } from './pages/Cases';
 import { CaseDetailPage } from './pages/CaseDetail';
@@ -34,6 +35,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/mfa-setup" element={<MFASetupPage />} />
           <Route path="/mfa-verify" element={<MFAVerifyPage />} />
+          <Route path="/verify" element={<VerifyPage />} />
 
           {/* Protected routes */}
           <Route

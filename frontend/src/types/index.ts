@@ -90,6 +90,8 @@ export interface DocumentVersion {
   uploader: User;
   uploaded_at: string;
   status: 'draft' | 'approved' | 'superseded';
+  verification_code?: string | null;
+  qr_url?: string | null;
   extracted_text?: string | null;
   ai_suggested_type?: string | null;
   ai_confidence?: string | null;
@@ -181,4 +183,27 @@ export interface SharedDocumentItem {
   share: ShareItem;
   document: DocumentItem;
 }
+
+export interface PublicVerificationTimelineEvent {
+  event_type: string;
+  timestamp: string;
+  chain_hash?: string | null;
+}
+
+export interface PublicVerificationResult {
+  verified: boolean;
+  message?: string;
+  verification_code?: string;
+  file_hash?: string;
+  version_number?: number;
+  status?: string;
+  uploaded_at?: string;
+  case_number?: string;
+  doc_type?: string;
+  ledger_block_count?: number;
+  latest_chain_hash?: string | null;
+  timeline?: PublicVerificationTimelineEvent[];
+  searched_code?: string;
+}
+
 

@@ -7,6 +7,7 @@ import { ledgerApi } from '../api/ledger';
 import { auditApi } from '../api/audit';
 import { TextInput } from '../components/TextInput';
 import { ShareModal } from '../components/ShareModal';
+import { QrCodeModal } from '../components/QrCodeModal';
 import { useToastStore } from '../stores/toastStore';
 import type { CaseClassification, CaseStatus, DocType, DocumentItem, DocumentVersion, User } from '../types';
 
@@ -66,6 +67,9 @@ export function CaseDetailPage() {
 
   // Share Modal state
   const [shareModalDoc, setShareModalDoc] = useState<DocumentItem | null>(null);
+
+  // QR Code Modal state
+  const [qrModalData, setQrModalData] = useState<{ version: DocumentVersion; docTitle: string } | null>(null);
 
   // Fetch Case details
   const { data: c, isLoading, error } = useQuery({
@@ -838,6 +842,14 @@ export function CaseDetailPage() {
                                 >
                                   ✍️ Sign v{latestVer.version_number}
                                 </button>
+
+                                <button
+                                  className="btn-secondary"
+                                  style={{ fontSize: 'var(--text-xs)', padding: 'var(--space-2) var(--space-3)', color: '#F97316', borderColor: 'rgba(249,115,22,0.3)' }}
+                                  onClick={() => setQrModalData({ version: latestVer, docTitle: doc.title })}
+                                >
+                                  📱 QR Code
+                                </button>
                               </>
                             )}
 
@@ -1306,6 +1318,15 @@ export function CaseDetailPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* QR Code Modal */}
+      {qrModalData && (
+        <QrCodeModal
+          version={qrModalData.version}
+          documentTitle={qrModalData.docTitle}
+          onClose={() => setQrModalData(null)}
+        />
       )}
     </div>
   );

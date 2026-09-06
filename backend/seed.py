@@ -12,6 +12,7 @@ from app.models import (
 from app.encryption import encrypt_bytes
 from app.crypto_service import get_or_create_user_rsa_keypair, sign_hash_with_rsa
 from app.ledger_service import record_ledger_event
+from app.verification_service import generate_verification_code
 from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -191,6 +192,7 @@ def seed_database():
                     uploaded_by=creator_id,
                     status=VersionStatus.approved,
                     extracted_text=text_content,
+                    verification_code=generate_verification_code(),
                 )
                 db.add(ver)
                 db.commit()
@@ -215,6 +217,7 @@ def seed_database():
                         uploaded_by=priya.id,
                         status=VersionStatus.approved,
                         extracted_text=text_content + " YARA memory scanning rules updated.",
+                        verification_code=generate_verification_code(),
                     )
                     db.add(v2_ver)
                     db.commit()
@@ -308,6 +311,14 @@ def seed_database():
                 ))
                 db.commit()
                 print("  + Active Share Created: Officer Raj shared Charge Sheet with Adv. Meera Patel")
+
+        # 7. Backfill missing verification codes for existing versions
+        unversioned_versions = db.query(DocumentVersion).filter(DocumentVersion.verification_code.is_(None)).all()
+        for u_ver in unversioned_versions:
+            u_ver.verification_code = generate_verification_code()
+        if unversioned_versions:
+            db.commit()
+            print(f"  + Backfilled verification codes for {len(unversioned_versions)} document versions.")
 
         print("=" * 60)
         print("✅ SIH Demo Seeding Completed Successfully!")

@@ -54,6 +54,9 @@ class DocumentVersion(Base):
     # AI Processing — extracted text from OCR / DOCX parsing
     extracted_text: Mapped[Optional[str]] = mapped_column(sa.Text, nullable=True, default=None)
 
+    # Verification Portal Code
+    verification_code: Mapped[Optional[str]] = mapped_column(sa.String(32), unique=True, index=True, nullable=True)
+
     document = relationship("Document", back_populates="versions")
     uploader = relationship("User", back_populates="documents_uploaded")
     signatures = relationship("Signature", back_populates="document_version")

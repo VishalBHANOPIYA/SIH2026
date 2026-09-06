@@ -27,6 +27,7 @@ from app.schemas.document import DocumentOut, DocumentVersionOut
 from app.dependencies import get_current_user
 from app.encryption import encrypt_bytes, decrypt_bytes
 from app.ai_service import extract_text, classify_document
+from app.verification_service import generate_verification_code
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +59,12 @@ def log_document_audit(
     db.commit()
 
 def _make_version_out(v: DocumentVersion, ai_type: str | None = None, ai_conf: str | None = None) -> DocumentVersionOut:
+    code = v.verification_code
+    if not code:
+        code = f"VER-{v.id:04d}-{v.file_hash[:8].upper()}"
+
+    qr_url = f"/api/public/verify/qr/{code}"
+
     return DocumentVersionOut(
         id=v.id,
         document_id=v.document_id,
@@ -70,6 +77,8 @@ def _make_version_out(v: DocumentVersion, ai_type: str | None = None, ai_conf: s
         uploader=UserOut.model_validate(v.uploader),
         uploaded_at=v.uploaded_at,
         status=v.status.value if isinstance(v.status, VersionStatus) else str(v.status),
+        verification_code=code,
+        qr_url=qr_url,
         extracted_text=v.extracted_text,
         ai_suggested_type=ai_type,
         ai_confidence=ai_conf,
@@ -202,6 +211,7 @@ async def upload_document(
         uploaded_by=current_user.id,
         status=VersionStatus.approved,
         extracted_text=extracted if extracted else None,
+        verification_code=generate_verification_code(),
     )
     db.add(first_version)
     db.commit()
@@ -327,6 +337,7 @@ async def upload_document_version(
         uploaded_by=current_user.id,
         status=VersionStatus.approved,
         extracted_text=extracted if extracted else None,
+        verification_code=generate_verification_code(),
     )
     db.add(new_version)
     db.commit()

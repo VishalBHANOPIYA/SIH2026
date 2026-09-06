@@ -16,6 +16,8 @@ class DocumentVersionOut(BaseModel):
     uploader: UserOut
     uploaded_at: datetime
     status: str
+    verification_code: Optional[str] = None
+    qr_url: Optional[str] = None
     extracted_text: Optional[str] = None
     ai_suggested_type: Optional[str] = None
     ai_confidence: Optional[str] = None
