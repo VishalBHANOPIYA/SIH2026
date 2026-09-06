@@ -1,78 +1,110 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 :root {
-  /* ── Canvas & Surfaces ── */
-  --color-canvas: #09090B;
-  --color-surface-1: #111114;
-  --color-surface-2: #1A1A1F;
-  --color-hairline: #27272A;
+  /* ── Canvas & Surfaces (Intercom Warm Cream & Pure White) ── */
+  --color-canvas: #f5f1ec;
+  --color-surface-1: #ffffff;
+  --color-surface-2: #eae5dd;
+  --color-hairline: #d3cec6;
+  --color-hairline-soft: #e5e0d8;
+  --color-inverse-canvas: #000000;
+  --color-inverse-surface-1: #1a1a1a;
 
-  /* ── Ink (Text) ── */
-  --color-ink: #FAFAFA;
-  --color-ink-muted: #A1A1AA;
-  --color-ink-subtle: #71717A;
-  --color-ink-tertiary: #52525B;
+  /* ── Ink (Charcoal Text Palette) ── */
+  --color-ink: #111111;
+  --color-ink-muted: #626260;
+  --color-ink-subtle: #7b7b78;
+  --color-ink-tertiary: #9c9fa5;
+  --color-on-primary: #ffffff;
+  --color-inverse-ink: #ffffff;
+  --color-inverse-ink-muted: #a1a1aa;
 
-  /* ── Accent ── */
-  --color-fin-orange: #F97316;
-  --color-fin-orange-hover: #EA580C;
+  /* ── Accent (Fin Orange & Brand Accent) ── */
+  --color-fin-orange: #ff5600;
+  --color-fin-orange-hover: #e04c00;
+  --color-brand-blue: #0007cb;
 
   /* ── Semantic ── */
-  --color-success: #22C55E;
-  --color-warning: #EAB308;
-  --color-error: #EF4444;
-  --color-info: #3B82F6;
+  --color-semantic-success: #22c55e;
+  --color-semantic-error: #ef4444;
+  --color-success: #22c55e;
+  --color-warning: #eab308;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
 
-  /* ── Report Palette ── */
-  --color-report-blue: #3B82F6;
-  --color-report-purple: #8B5CF6;
-  --color-report-teal: #14B8A6;
-  --color-report-pink: #EC4899;
+  /* ── Report Palette (In-Product Mockups & Charts) ── */
+  --color-report-blue: #3b82f6;
+  --color-report-purple: #8b5cf6;
+  --color-report-pink: #ec4899;
+  --color-report-teal: #14b8a6;
+  --color-report-lime: #84cc16;
+  --color-report-orange: #ff5600;
 
-  /* ── Typography ── */
+  /* ── Typography (Saans / Inter Fallback & SaansMono / JetBrains Mono) ── */
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
   /* Type Scale */
-  --text-xs: 0.75rem;    /* 12px */
-  --text-sm: 0.875rem;   /* 14px */
-  --text-base: 1rem;     /* 16px */
-  --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.25rem;    /* 20px */
-  --text-2xl: 1.5rem;    /* 24px */
-  --text-3xl: 1.875rem;  /* 30px */
-  --text-4xl: 2.25rem;   /* 36px */
+  --text-caption: 0.75rem;    /* 12px */
+  --text-xs: 0.75rem;         /* 12px */
+  --text-sm: 0.875rem;        /* 14px */
+  --text-button: 0.9375rem;   /* 15px */
+  --text-base: 1rem;          /* 16px */
+  --text-body-lg: 1.125rem;   /* 18px */
+  --text-lg: 1.125rem;        /* 18px */
+  --text-subhead: 1.25rem;    /* 20px */
+  --text-xl: 1.25rem;         /* 20px */
+  --text-card-title: 1.375rem;/* 22px */
+  --text-2xl: 1.5rem;         /* 24px */
+  --text-headline: 1.75rem;   /* 28px */
+  --text-3xl: 1.875rem;       /* 30px */
+  --text-display-md: 2.5rem;  /* 40px */
+  --text-4xl: 2.25rem;        /* 36px */
+  --text-display-lg: 3.5rem;  /* 56px */
+  --text-display-xl: 4.5rem;  /* 72px */
 
-  --leading-tight: 1.25;
+  --leading-tight: 1.05;
+  --leading-snug: 1.20;
   --leading-normal: 1.5;
   --leading-relaxed: 1.625;
 
-  /* ── Spacing ── */
+  /* ── Spacing (8px Grid) ── */
+  --space-xxs: 4px;
   --space-1: 4px;
+  --space-xs: 8px;
   --space-2: 8px;
+  --space-sm: 12px;
   --space-3: 12px;
+  --space-md: 16px;
   --space-4: 16px;
+  --space-lg: 24px;
   --space-6: 24px;
+  --space-xl: 32px;
   --space-8: 32px;
+  --space-xxl: 48px;
   --space-12: 48px;
-  --space-24: 96px;
+  --space-section: 96px;
 
-  /* ── Border Radius ── */
-  --radius-sm: 4px;
+  /* ── Border Radius Scale ── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+  --radius-xxl: 24px;
+  --radius-pill: 9999px;
   --radius-full: 9999px;
 
   /* ── Elevation ── */
-  --elevation-1: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
-  --elevation-2: 0 4px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
-  --elevation-3: 0 10px 15px rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.3);
-  --elevation-4: 0 20px 25px rgba(0,0,0,0.5), 0 8px 10px rgba(0,0,0,0.3);
+  --elevation-1: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --elevation-2: 0 4px 8px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  --elevation-3: 0 12px 20px rgba(0,0,0,0.10);
+  --elevation-4: 0 20px 30px rgba(0,0,0,0.12);
 
   /* ── Transitions ── */
   --transition-fast: 150ms ease;
@@ -80,7 +112,7 @@
   --transition-slow: 300ms ease;
 }
 
-/* ── Global Resets ── */
+/* ── Global Resets & Warm Cream Ground ── */
 *,
 *::before,
 *::after {
@@ -104,52 +136,57 @@ body {
   min-height: 100vh;
 }
 
-/* ── Component: Button Primary ── */
+/* ── Component: Button Primary (Charcoal System Primary) ── */
+.button-primary,
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  background-color: var(--color-fin-orange);
-  color: white;
+  padding: 10px 18px;
+  background-color: var(--color-ink);
+  color: var(--color-on-primary);
   font-family: var(--font-family);
-  font-size: var(--text-sm);
+  font-size: var(--text-button);
   font-weight: var(--font-weight-medium);
-  line-height: var(--leading-tight);
+  line-height: 1.2;
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: background-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+  transition: background-color var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
   white-space: nowrap;
   user-select: none;
 }
+.button-primary:hover,
 .btn-primary:hover {
-  background-color: var(--color-fin-orange-hover);
+  background-color: #222222;
   box-shadow: var(--elevation-2);
 }
+.button-primary:active,
 .btn-primary:active {
   transform: scale(0.98);
 }
+.button-primary:disabled,
 .btn-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-/* ── Component: Button Secondary ── */
+/* ── Component: Button Secondary (White Floating on Cream) ── */
+.button-secondary,
 .btn-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
-  background-color: transparent;
+  padding: 10px 18px;
+  background-color: var(--color-surface-1);
   color: var(--color-ink);
   font-family: var(--font-family);
-  font-size: var(--text-sm);
+  font-size: var(--text-button);
   font-weight: var(--font-weight-medium);
-  line-height: var(--leading-tight);
+  line-height: 1.2;
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-md);
   cursor: pointer;
@@ -157,41 +194,99 @@ body {
   white-space: nowrap;
   user-select: none;
 }
+.button-secondary:hover,
 .btn-secondary:hover {
-  background-color: var(--color-surface-2);
-  border-color: var(--color-ink-tertiary);
+  background-color: #faf7f2;
+  border-color: #b5b0a8;
 }
+.button-secondary:disabled,
 .btn-secondary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-/* ── Component: Feature Card ── */
+/* ── Component: Button Fin (Fin Orange AI Product Accent) ── */
+.button-fin,
+.btn-fin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 10px 18px;
+  background-color: var(--color-fin-orange);
+  color: white;
+  font-family: var(--font-family);
+  font-size: var(--text-button);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.2;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+}
+.button-fin:hover,
+.btn-fin:hover {
+  background-color: var(--color-fin-orange-hover);
+}
+
+/* ── Component: Feature Card (White Floating Tile on Warm Cream) ── */
 .feature-card {
   background-color: var(--color-surface-1);
   border: 1px solid var(--color-hairline);
   border-radius: var(--radius-lg);
-  padding: var(--space-6);
+  padding: var(--space-lg);
   box-shadow: var(--elevation-1);
   transition: box-shadow var(--transition-base), border-color var(--transition-base);
 }
 .feature-card:hover {
   box-shadow: var(--elevation-2);
-  border-color: var(--color-ink-tertiary);
+  border-color: #b5b0a8;
 }
 
-/* ── Typography Classes ── */
-.card-title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--leading-tight);
+/* ── Component: Product Mockup Card (16px corners for product screenshots) ── */
+.product-mockup-card {
+  background-color: var(--color-surface-1);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  box-shadow: var(--elevation-1);
+  transition: box-shadow var(--transition-base);
+}
+
+/* ── Typography Classes (Saans Spec) ── */
+.display-xl {
+  font-size: var(--text-display-xl);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.05;
+  letter-spacing: -2.0px;
   color: var(--color-ink);
 }
-
+.display-lg {
+  font-size: var(--text-display-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.10;
+  letter-spacing: -1.4px;
+  color: var(--color-ink);
+}
+.display-md {
+  font-size: var(--text-display-md);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.15;
+  letter-spacing: -0.8px;
+  color: var(--color-ink);
+}
+.card-title {
+  font-size: var(--text-card-title);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+  letter-spacing: -0.3px;
+  color: var(--color-ink);
+}
 .text-muted {
   color: var(--color-ink-muted);
 }
-
 .text-subtle {
   color: var(--color-ink-subtle);
 }
@@ -204,26 +299,11 @@ body {
   background: var(--color-canvas);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-ink-tertiary);
+  background: var(--color-hairline);
   border-radius: var(--radius-full);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-ink-subtle);
-}
-
-/* ── Toast Animation ── */
-@keyframes slideInRight {
-  from { transform: translateX(100%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-@keyframes slideOutRight {
-  from { transform: translateX(0); opacity: 1; }
-  to { transform: translateX(100%); opacity: 0; }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 /* ── Shimmer & Skeleton Animations ── */
@@ -261,4 +341,3 @@ textarea:focus-visible {
   outline: 2px solid var(--color-fin-orange) !important;
   outline-offset: 2px !important;
 }
-
